@@ -1,7 +1,7 @@
 
 -- +goose Up
 -- SQL in section 'Up' is executed when this migration is applied
-create table block
+create table blocks
 (
 	content_id int,
 	content text,
@@ -11,4 +11,4 @@ create table block
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back
 
-drop table block;
+drop table blocks;
