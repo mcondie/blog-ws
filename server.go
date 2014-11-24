@@ -15,10 +15,20 @@ import (
 func main(){
 
 	db, err := sqlx.Connect("postgres", "user=blogws dbname=blogws_dev password=blogws sslmode=disable")
-	Log(err)
+	Logerr(err)
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/blocks", Block_List)
+	r.HandleFunc("/blocks", Block_List).Methods("GET")
+	r.HandleFunc("/blocks/", Block_List).Methods("GET")
+	r.HandleFunc("/blocks", Block_Create).Methods("POST")
+	r.HandleFunc("/blocks/", Block_Create).Methods("POST")
+	r.HandleFunc("/blocks/{key}", Block_View).Methods("GET")
+	r.HandleFunc("/blocks/{key}/", Block_View).Methods("GET")
+	r.HandleFunc("/blocks/{key}", Block_Update).Methods("POST")
+	r.HandleFunc("/blocks/{key}/", Block_Update).Methods("POST")
+	r.HandleFunc("/blocks/{key}", Block_Delete).Methods("DELETE")
+	r.HandleFunc("/blocks/{key}/", Block_Delete).Methods("DELETE")
+
 
 	n := negroni.Classic()
 
@@ -28,10 +38,17 @@ func main(){
 			next(rw, r)
 		}))
 	n.Use(negroni.HandlerFunc(JSONEncoderHandler))
+	n.Use(negroni.HandlerFunc(ContentTypeHandler))
+
+
 	n.UseHandler(r)
 	n.Run(":3000")
 }
 
+func ContentTypeHandler(w http.ResponseWriter, req *http.Request, next http.HandlerFunc){
+	w.Header().Set("Content-Type", "text/json")
+	next(w, req)
+}
 
 func HomeHandler(w http.ResponseWriter, req *http.Request){
 	
@@ -44,10 +61,14 @@ func JSONEncoderHandler(rw http.ResponseWriter, r *http.Request, next http.Handl
 	next(rw, r)
 }
 
-func Log(err error){
+func Logerr(err error){
 	if err != nil {
-        log.Fatalln(err)
+        log.Panicln(err)
     }
+}
+
+func Log(s string){
+    log.Println(s)
 }
 
 func GetDB(r *http.Request) *sqlx.DB {
